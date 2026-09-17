@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Apoio à Decisão Fotovoltaica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { font-family: "Segoe UI", Arial, sans-serif; }
+        .card { border: none; border-radius: 12px; }
+        .card-title { color: #2c3e50; }
+        img.img-fluid { border-radius: 8px; }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+
+    <!-- Cabeçalho -->
+    <div class="text-center mb-5">
+        <h1 class="mb-3">Sistema de Apoio à Decisão Fotovoltaica</h1>
+        <p class="text-muted">
+            Informe os dados do sistema fotovoltaico para análise de desempenho e
+            identificação da estratégia recomendada de fim de vida.
+        </p>
+    </div>
+
+    <!-- Formulário -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-body p-4">
+            <h4 class="card-title mb-4">Dados de Entrada</h4>
+
+            <form method="POST" class="row g-3">
+
+                <div class="col-md-4">
+                    <label class="form-label">Ano de instalação</label>
+                    <input type="number" class="form-control" name="Ano_instalacao" required
+                           value="{{ request.form.get('Ano_instalacao', '') }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Ano atual</label>
+                    <input type="number" class="form-control" name="Ano_atual" required
+                           value="{{ request.form.get('Ano_atual', '') }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Payback (anos)</label>
+                    <input type="number" step="0.01" class="form-control" name="Payback" required
+                           value="{{ request.form.get('Payback', '') }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Consumo inicial anual (kWh)</label>
+                    <input type="number" step="0.01" class="form-control" name="Consumo_inicial_anual" required
+                           value="{{ request.form.get('Consumo_inicial_anual', '') }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Consumo atual anual (kWh)</label>
+                    <input type="number" step="0.01" class="form-control" name="Consumo_atual_anual" required
+                           value="{{ request.form.get('Consumo_atual_anual', '') }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Potência nominal da placa (W)</label>
+                    <input type="number" step="0.01" class="form-control" name="Potencia_Nominal_Placa" required
+                           value="{{ request.form.get('Potencia_Nominal_Placa', '') }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Quantidade de placas</label>
+                    <input type="number" class="form-control" name="Quantidade_Placa" required
+                           value="{{ request.form.get('Quantidade_Placa', '') }}">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Classe do sistema</label>
+                    <select class="form-select" name="Classe" required>
+                        <option value="">Selecione...</option>
+                        <option value="1" {% if request.form.get('Classe') == '1' %}selected{% endif %}>1 – III-V Multijunction Cells</option>
+                        <option value="2" {% if request.form.get('Classe') == '2' %}selected{% endif %}>2 – Single Junction</option>
+                        <option value="3" {% if request.form.get('Classe') == '3' %}selected{% endif %}>3 – Crystalline Si Cells</option>
+                        <option value="4" {% if request.form.get('Classe') == '4' %}selected{% endif %}>4 – Thin-Film Technologies</option>
+                        <option value="5" {% if request.form.get('Classe') == '5' %}selected{% endif %}>5 – Emerging PV</option>
+                        <option value="6" {% if request.form.get('Classe') == '6' %}selected{% endif %}>6 – Hybrid Tandems</option>
+                    </select>
+                </div>
+
+                <div class="col-12 text-end mt-2">
+                    <button type="submit" class="btn btn-primary btn-lg">Calcular</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Erro -->
+    {% if erro %}
+    <div class="alert alert-danger">{{ erro }}</div>
+    {% endif %}
+
+    <!-- Resultados -->
+    {% if resultado %}
+    <div class="card shadow-sm mb-5">
+        <div class="card-body p-4">
+            <h4 class="card-title mb-4">Resultados</h4>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>Classe selecionada:</strong> {{ descricao_classe }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Cenário identificado:</strong> {{ cenario }}</p>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover text-center align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ano do Cruzamento</th>
+                            <th>Idade do Sistema (anos)</th>
+                            <th>Produção no Cruzamento (kWh)</th>
+                            <th>Desempenho Estimado (%)</th>
+                            <th>Estratégia Recomendada</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in resultado %}
+                        <tr>
+                            <td>{{ "%.2f"|format(row['Ano do Cruzamento']) }}</td>
+                            <td>{{ "%.2f"|format(row['Idade do Sistema (anos)']) }}</td>
+                            <td>{{ "%.2f"|format(row['Produção no Cruzamento [kWh]']) }}</td>
+                            <td>{{ "%.2f"|format(row['Desempenho Estimado [%]']) }}</td>
+                            <td>{{ row['Estratégia Recomendada'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                <a href="{{ url_for('modulo_1_download') }}" class="btn btn-success me-2">Baixar Resultados (Excel)</a>
+                <a href="{{ url_for('modulo_1_download_grafico') }}" class="btn btn-outline-secondary">Baixar Dados do Gráfico (Excel)</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Gráfico -->
+    {% if grafico %}
+    <div class="card shadow-sm mb-5">
+        <div class="card-body text-center p-4">
+            <h4 class="card-title mb-4">Representação Visual do Comportamento</h4>
+            <img src="data:image/png;base64,{{ grafico }}" class="img-fluid">
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- QR Code -->
+    {% if qr_base64 %}
+    <div class="card shadow-sm mb-5">
+        <div class="card-body text-center p-4">
+            <h4 class="card-title mb-4">QR Code do Artigo Científico que fundamenta esta aplicação</h4>
+            <img src="data:image/png;base64,{{ qr_base64 }}"
+                 class="img-fluid my-3" style="max-width: 200px;">
+            <p class="small text-break mt-2">
+                <a href="{{ qr_texto }}" target="_blank" class="text-decoration-none">
+                    {{ qr_texto }}
+                </a>
+                
+                <p class="text-muted small text-center">
+                    A publicação que detalha a fundamentação metodológica pode ser acessada por este DOI:
+                    <a href="https://doi.org/10.3390/cleantechnol8050141" target="_blank"
+                    class="text-decoration-none">10.3390/cleantechnol8050141</a>.
+                </p>
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <p class="text-muted small text-center">Todos os direitos reservados © 2026</p>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

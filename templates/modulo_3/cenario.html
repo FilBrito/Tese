@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador EMP — Cenário {{ letra }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/modulo_3.css') }}" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container my-5" style="max-width: 860px;">
+
+    <!-- Progresso -->
+    <div class="text-center mb-4">
+        <p class="text-muted small mb-1">Etapa {{ idx_atual + 1 }} de {{ total }}</p>
+        <h3 class="mb-2">Cenário {{ letra }}</h3>
+        <div class="progress mx-auto" style="height: 8px; max-width: 360px;">
+            <div class="progress-bar"
+                 style="width: {{ ((idx_atual + 1) / total * 100)|int }}%"></div>
+        </div>
+    </div>
+
+    {% if erro %}
+    <div class="alert alert-danger">{{ erro }}</div>
+    {% endif %}
+
+    <form method="POST" id="form-cenario">
+
+        <!-- ================================================ -->
+        <!-- BLOCO: ÍNDICE DE MATURIDADE DE REUSO              -->
+        <!-- ================================================ -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Índice de Maturidade de Reuso — Cenário {{ letra }}</h5>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted mb-4">
+                    Para cada critério, selecione a opção que melhor descreve o contexto
+                    avaliado no Cenário {{ letra }}.
+                </p>
+
+                {% for c in criterios %}
+                <div class="criterio-bloco mb-4">
+                    <div class="criterio-header">
+                        <span class="badge bg-primary me-2">{{ c.numero }}</span>
+                        <strong>{{ c.nome }}</strong>
+                    </div>
+                    <p class="text-muted small mt-1 mb-2">{{ c.objetivo }}</p>
+
+                    <div class="pergunta-box p-3">
+                        <p class="mb-3">
+                            <strong>Pergunta:</strong> {{ c.pergunta_reuso }}
+                        </p>
+                        <div class="d-flex flex-column gap-2">
+                            {% for valor, rotulo in escala %}
+                            <div class="form-check escala-item">
+                                <input class="form-check-input" type="radio"
+                                       name="reuso_{{ c.numero }}"
+                                       id="reuso_{{ c.numero }}_{{ valor }}"
+                                       value="{{ valor }}" required>
+                                <label class="form-check-label"
+                                       for="reuso_{{ c.numero }}_{{ valor }}">
+                                    {{ rotulo }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% if not loop.last %}<hr class="my-3">{% endif %}
+                {% endfor %}
+
+                <!-- FC Reuso -->
+                <hr class="mt-4">
+                <div class="row align-items-start mt-3">
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">
+                            Fator de Correção de Reuso — Cenário {{ letra }} (%)
+                        </label>
+                        <p class="text-muted small">
+                            Representa limitações que o índice não captura diretamente:
+                            degradação dos módulos, ausência de certificação, incertezas de
+                            desempenho residual e limitações do mercado secundário.
+                            Valores próximos de 100% indicam maior potencial de
+                            aproveitamento; valores menores refletem restrições significativas.
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <input type="number" class="form-control form-control-lg text-center"
+                               name="fc_reuso" min="0" max="100" step="0.01"
+                               placeholder="0 – 100 %" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- BLOCO: ÍNDICE DE MATURIDADE DE RECICLAGEM         -->
+        <!-- ================================================ -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Índice de Maturidade de Reciclagem — Cenário {{ letra }}</h5>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted mb-4">
+                    Para cada critério, selecione a opção que melhor descreve o contexto
+                    avaliado no Cenário {{ letra }}.
+                </p>
+
+                {% for c in criterios %}
+                <div class="criterio-bloco mb-4">
+                    <div class="criterio-header">
+                        <span class="badge bg-success me-2">{{ c.numero }}</span>
+                        <strong>{{ c.nome }}</strong>
+                    </div>
+                    <p class="text-muted small mt-1 mb-2">{{ c.objetivo }}</p>
+
+                    <div class="pergunta-box p-3">
+                        <p class="mb-3">
+                            <strong>Pergunta:</strong> {{ c.pergunta_reciclagem }}
+                        </p>
+                        <div class="d-flex flex-column gap-2">
+                            {% for valor, rotulo in escala %}
+                            <div class="form-check escala-item">
+                                <input class="form-check-input" type="radio"
+                                       name="reciclagem_{{ c.numero }}"
+                                       id="reciclagem_{{ c.numero }}_{{ valor }}"
+                                       value="{{ valor }}" required>
+                                <label class="form-check-label"
+                                       for="reciclagem_{{ c.numero }}_{{ valor }}">
+                                    {{ rotulo }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% if not loop.last %}<hr class="my-3">{% endif %}
+                {% endfor %}
+
+                <!-- FC Reciclagem -->
+                <hr class="mt-4">
+                <div class="row align-items-start mt-3">
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">
+                            Fator de Correção de Reciclagem — Cenário {{ letra }} (%)
+                        </label>
+                        <p class="text-muted small">
+                            Representa limitações específicas da reciclagem: dificuldades de
+                            separação de materiais, perdas de processamento, downcycling e
+                            restrições logísticas. Valores próximos de 100% indicam maior
+                            potencial de recuperação de materiais.
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <input type="number" class="form-control form-control-lg text-center"
+                               name="fc_reciclagem" min="0" max="100" step="0.01"
+                               placeholder="0 – 100 %" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navegação -->
+        <div class="d-flex justify-content-between mt-4 mb-5">
+            <a href="{{ url_for('modulo_3.reiniciar') }}" class="btn btn-outline-secondary btn-lg">
+                ← Recomeçar
+            </a>
+            <button type="submit" id="btn-submit" class="btn btn-primary btn-lg px-5">
+                {% if is_last %}
+                    Ver Resultados →
+                {% else %}
+                    Próximo: Cenário {{ letras_ativas[idx_atual + 1] }} →
+                {% endif %}
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/modulo_3.js') }}"></script>
+</body>
+</html>

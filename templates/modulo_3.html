@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Decisão Fotovoltaico</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #2c3e50; }
+        form { margin-bottom: 30px; }
+        label { display: block; margin-top: 10px; }
+        input, select { padding: 5px; width: 200px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .grafico, .qr-code { margin-top: 30px; text-align: center; }
+        .descricao { margin-top: 20px; font-weight: bold; }
+        .btn-download {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .btn-download:hover { background-color: #2980b9; }
+    </style>
+</head>
+<body>
+    <h1>Painel de Decisão Sobre Sistemas Fotovoltaicos</h1>
+
+    <form method="POST">
+        <label for="Ano_instalacao">Ano de instalação:</label>
+        <input type="number" name="Ano_instalacao" required value="{{ request.form.get('Ano_instalacao', '') }}">
+
+        <label for="Ano_atual">Ano atual:</label>
+        <input type="number" name="Ano_atual" required value="{{ request.form.get('Ano_atual', '') }}">
+
+        <label for="Consumo_inicial">Consumo inicial [kWh]:</label>
+        <input type="number" step="0.01" name="Consumo_inicial" required value="{{ request.form.get('Consumo_inicial', '') }}">
+
+        <label for="Consumo_atual">Consumo atual [kWh]:</label>
+        <input type="number" step="0.01" name="Consumo_atual" required value="{{ request.form.get('Consumo_atual', '') }}">
+
+        <label for="Potencia_inicial">Potência inicial do sistema [kWh]:</label>
+        <input type="number" step="0.01" name="Potencia_inicial" required value="{{ request.form.get('Potencia_inicial', '') }}">
+
+        <label for="Payback">Payback do sistema [anos]:</label>
+        <input type="number" step="0.01" name="Payback" required value="{{ request.form.get('Payback', '') }}">
+
+        <label for="Classe">Classe do sistema:</label>
+        <select name="Classe" required>
+            <option value="">Selecione...</option>
+            <option value="1" {% if request.form.get('Classe') == '1' %}selected{% endif %}>1 – III-V Multijunction Cells</option>
+            <option value="2" {% if request.form.get('Classe') == '2' %}selected{% endif %}>2 – Single Junction</option>
+            <option value="3" {% if request.form.get('Classe') == '3' %}selected{% endif %}>3 – Crystalline Si Cells</option>
+            <option value="4" {% if request.form.get('Classe') == '4' %}selected{% endif %}>4 – Thin-Film Technologies</option>
+            <option value="5" {% if request.form.get('Classe') == '5' %}selected{% endif %}>5 – Emerging PV</option>
+            <option value="6" {% if request.form.get('Classe') == '6' %}selected{% endif %}>6 – Hybrid Tandems</option>
+        </select>
+
+        <button type="submit" style="margin-top:15px;">Calcular</button>
+    </form>
+
+    {% if erro %}
+        <div style="color:red; font-weight:bold;">{{ erro }}</div>
+    {% endif %}
+
+    {% if resultado %}
+        <h2>Resultados</h2>
+        <div class="descricao">Classe selecionada: {{ descricao_classe }}</div>
+        <div class="descricao">Cenário identificado: {{ cenario }}</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Ano do Cruzamento</th>
+                    <th>Idade do Sistema (anos)</th>
+                    <th>Produção no Cruzamento [kWh]</th>
+                    <th>Desempenho Estimado [%]</th>
+                    <th>Estratégia Recomendada</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in resultado %}
+                    <tr>
+                        <td>{{ "%.2f"|format(row['Ano do Cruzamento']) }}</td>
+                        <td>{{ "%.2f"|format(row['Idade do Sistema (anos)']) }}</td>
+                        <td>{{ "%.2f"|format(row['Produção no Cruzamento [kWh]']) }}</td>
+                        <td>{{ "%.2f"|format(row['Desempenho Estimado [%]']) }}</td>
+                        <td>{{ row['Estratégia Recomendada'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    <!-- Botões de download -->
+    <a href="{{ url_for('modulo_2_download') }}" class="btn-download">Baixar resultados em Excel</a>
+    <a href="{{ url_for('modulo_2_download_grafico') }}" class="btn-download">Baixar dados do gráfico</a>
+
+    {% if grafico %}
+            <div class="grafico">
+                <h2>Gráfico de Produção x Consumo</h2>
+                <img src="data:image/png;base64,{{ grafico }}" alt="Gráfico">
+            </div>
+        {% endif %}
+
+        {% if qr_base64 %}
+            <div class="qr-code">
+                <h2>QR Code sobre o artigo que explica a lógica para construção deste painel</h2>
+                <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code">
+                <p>{{ qr_texto }}</p>
+            </div>
+        {% endif %}
+    {% endif %}
+</body>
+</html>

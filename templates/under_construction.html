@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 700px;
+        margin: 100px auto;
+        padding: 20px;
+        text-align: center;
+    }
+
+    h2 {
+        font-size: 2em;
+        color: #ff9800;
+        margin-bottom: 20px;
+    }
+
+    .construction-box {
+        background-color: #fff3e0;
+        border: 2px dashed #ff9800;
+        border-radius: 10px;
+        padding: 40px 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+
+    .construction-box p {
+        font-size: 1.1em;
+        color: #555;
+        margin: 0 0 20px;
+    }
+
+    .construction-box span {
+        font-size: 3em;
+        display: block;
+        margin-bottom: 20px;
+    }
+
+    a.button {
+        display: inline-block;
+        text-decoration: none;
+        color: #fff;
+        background-color: #ff9800;
+        padding: 12px 30px;
+        border-radius: 6px;
+        font-weight: bold;
+        transition: background-color 0.2s;
+    }
+
+    a.button:hover {
+        background-color: #e68900;
+    }
+</style>
+
+<div class="container">
+    <h2>{{ titulo }}</h2>
+
+    <div class="construction-box">
+        <span>🚧</span>
+        <p>Esta funcionalidade ainda está em desenvolvimento.</p>
+        <p>Estamos trabalhando para entregá-la em breve!</p>
+    </div>
+
+    <a href="/" class="button">⬅ Voltar para o início</a>
+</div>
+{% endblock %}
